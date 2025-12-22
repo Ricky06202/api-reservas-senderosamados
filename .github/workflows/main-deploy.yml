@@ -14,7 +14,7 @@ jobs:
       - name: Get latest code
         # Baja el código de tu repositorio
         uses: actions/checkout@v4
-      
+
       # --- PASO DE DESPLIEGUE DIRECTO ---
       - name: Sync files via FTP
         # Usa la acción de despliegue FTP
@@ -24,11 +24,11 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          
+
           # Directorio local: La raíz del repositorio.
           # Esto subirá todos los archivos descargados por actions/checkout@v4.
-          local-dir: ./ 
-          
+          local-dir: ./
+
           # Directorio remoto: Dónde subirá los archivos en cPanel.
           # Ajusta esta ruta según tu configuración de hosting.
-          server-dir: /api-reservas.senderosamados.rsanjur.com/
+          server-dir: /api-reservas-senderosamados.rsanjur.com/
