@@ -7,7 +7,21 @@ import { eq } from 'drizzle-orm'
 const app = express()
 const PORT = process.env.PORT || 3000
 
-app.use(cors())
+const allowedOrigins = ['https://reservas-senderosamados.rsanjur.com']
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Permitir peticiones sin origen (como herramientas de servidor o Postman)
+      if (!origin) return callback(null, true)
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = 'El origen CORS especificado no tiene permiso de acceso.'
+        return callback(new Error(msg), false)
+      }
+      return callback(null, true)
+    },
+  })
+)
 app.use(express.json())
 
 // Obtener todas las casas
