@@ -7,18 +7,26 @@ import { eq } from 'drizzle-orm'
 const app = express()
 const PORT = process.env.PORT || 3000
 
-const allowedOrigins = ['https://reservas-senderosamados.rsanjur.com']
+const allowedOrigins = [
+  'https://reservas-senderosamados.rsanjur.com',
+  'http://localhost',
+  'capacitor://localhost',
+  'ionic://localhost',
+]
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Permitir peticiones sin origen (como herramientas de servidor o Postman)
+      // Si no hay origin (ej. App móvil nativa, Postman, server-to-server)
       if (!origin) return callback(null, true)
-      if (allowedOrigins.indexOf(origin) === -1) {
-        const msg = 'El origen CORS especificado no tiene permiso de acceso.'
+
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        return callback(null, true)
+      } else {
+        console.log('Solicitud bloqueada por CORS desde el origen:', origin)
+        const msg = `El origen CORS '${origin}' no tiene permiso de acceso.`
         return callback(new Error(msg), false)
       }
-      return callback(null, true)
     },
   })
 )
