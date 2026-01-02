@@ -1,15 +1,75 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "37b22f9e-e75a-4787-af6c-60d463eef7e6",
+  "id": "b7fdcdc9-5a6a-4fc1-b4aa-00e7fd6bbd0d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "anotaciones": {
+      "name": "anotaciones",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "reserva_id": {
+          "name": "reserva_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "contenido": {
+          "name": "contenido",
+          "type": "varchar(1000)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "anotaciones_reserva_id_reservas_id_fk": {
+          "name": "anotaciones_reserva_id_reservas_id_fk",
+          "tableFrom": "anotaciones",
+          "tableTo": "reservas",
+          "columnsFrom": [
+            "reserva_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "anotaciones_id": {
+          "name": "anotaciones_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
     "casas": {
       "name": "casas",
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "int",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": true
@@ -40,7 +100,7 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "int",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": true
@@ -71,7 +131,7 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "int",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": true
