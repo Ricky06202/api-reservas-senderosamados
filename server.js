@@ -2,7 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import { db } from './db/index.js'
 import { casas, estado, reservas, anotaciones } from './db/schema.js'
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -12,7 +12,6 @@ const allowedOrigins = [
   'http://localhost:8081',
   'capacitor://localhost',
   'ionic://localhost',
-  'http://186.72.144.79:8081',
 ]
 
 app.use(
@@ -59,29 +58,49 @@ app.get('/estados', async (req, res) => {
 // Obtener todas las reservas con detalles y anotaciones
 app.get('/reservas', async (req, res) => {
   try {
-    const allReservas = await db.query.reservas.findMany({
-      with: {
-        casa: {
-          columns: {
-            nombre: true,
-          },
-        },
-        estado: {
-          columns: {
-            nombre: true,
-          },
-        },
-        anotaciones: true,
-      },
-    })
+    const reservasResult = await db
+      .select({
+        id: reservas.id,
+        nombre: reservas.nombre,
+        casaId: reservas.casaId,
+        cantPersonas: reservas.cantPersonas,
+        estadoId: reservas.estadoId,
+        total: reservas.total,
+        fechaInicio: reservas.fechaInicio,
+        fechaFin: reservas.fechaFin,
+        casaNombre: casas.nombre,
+        estadoNombre: estado.nombre,
+      })
+      .from(reservas)
+      .leftJoin(casas, eq(reservas.casaId, casas.id))
+      .leftJoin(estado, eq(reservas.estadoId, estado.id))
 
-    // Mapear para mantener compatibilidad con el formato anterior si es necesario,
-    // o simplemente devolver el objeto con anotaciones.
-    const formattedReservas = allReservas.map((r) => ({
-      ...r,
-      casa: r.casa?.nombre,
-      estado: r.estado?.nombre,
-    }))
+    const reservaIds = reservasResult.map((r) => r.id)
+    let anotacionesMap = {}
+
+    if (reservaIds.length > 0) {
+      const allAnotaciones = await db
+        .select()
+        .from(anotaciones)
+        .where(inArray(anotaciones.reservaId, reservaIds))
+
+      for (const nota of allAnotaciones) {
+        if (!anotacionesMap[nota.reservaId]) {
+          anotacionesMap[nota.reservaId] = []
+        }
+        anotacionesMap[nota.reservaId].push(nota)
+      }
+    }
+
+    const formattedReservas = reservasResult.map((r) => {
+      const { casaNombre, estadoNombre, ...rest } = r
+      return {
+        ...rest,
+        casa: casaNombre,
+        estado: estadoNombre,
+        anotaciones: anotacionesMap[r.id] || [],
+      }
+    })
 
     res.json(formattedReservas)
   } catch (error) {
