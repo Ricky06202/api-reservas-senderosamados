@@ -12,6 +12,7 @@ const allowedOrigins = [
   'http://localhost:8081',
   'capacitor://localhost',
   'ionic://localhost',
+  'http://186.72.144.79:8081',
 ]
 
 app.use(
