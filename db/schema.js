@@ -5,6 +5,7 @@ import {
   decimal,
   timestamp,
 } from 'drizzle-orm/mysql-core'
+import { relations } from 'drizzle-orm'
 
 export const estado = mysqlTable('estado', {
   id: int('id').primaryKey().autoincrement(),
@@ -26,3 +27,29 @@ export const reservas = mysqlTable('reservas', {
   fechaInicio: timestamp('fecha_inicio').notNull(),
   fechaFin: timestamp('fecha_fin').notNull(),
 })
+
+export const anotaciones = mysqlTable('anotaciones', {
+  id: int('id').primaryKey().autoincrement(),
+  reservaId: int('reserva_id').references(() => reservas.id),
+  contenido: varchar('contenido', { length: 1000 }).notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+
+export const reservasRelations = relations(reservas, ({ many, one }) => ({
+  anotaciones: many(anotaciones),
+  casa: one(casas, {
+    fields: [reservas.casaId],
+    references: [casas.id],
+  }),
+  estado: one(estado, {
+    fields: [reservas.estadoId],
+    references: [estado.id],
+  }),
+}))
+
+export const anotacionesRelations = relations(anotaciones, ({ one }) => ({
+  reserva: one(reservas, {
+    fields: [anotaciones.reservaId],
+    references: [reservas.id],
+  }),
+}))

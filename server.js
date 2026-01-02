@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import { db } from './db/index.js'
-import { casas, estado, reservas } from './db/schema.js'
+import { casas, estado, reservas, anotaciones } from './db/schema.js'
 import { eq } from 'drizzle-orm'
 
 const app = express()
@@ -54,26 +54,34 @@ app.get('/estados', async (req, res) => {
   }
 })
 
-// Obtener todas las reservas con detalles
+// Obtener todas las reservas con detalles y anotaciones
 app.get('/reservas', async (req, res) => {
   try {
-    // Realizamos joins para obtener los nombres de casa y estado
-    const allReservas = await db
-      .select({
-        id: reservas.id,
-        nombre: reservas.nombre,
-        casa: casas.nombre,
-        cantPersonas: reservas.cantPersonas,
-        estado: estado.nombre,
-        total: reservas.total,
-        fechaInicio: reservas.fechaInicio,
-        fechaFin: reservas.fechaFin,
-      })
-      .from(reservas)
-      .leftJoin(casas, eq(reservas.casaId, casas.id))
-      .leftJoin(estado, eq(reservas.estadoId, estado.id))
+    const allReservas = await db.query.reservas.findMany({
+      with: {
+        casa: {
+          columns: {
+            nombre: true,
+          },
+        },
+        estado: {
+          columns: {
+            nombre: true,
+          },
+        },
+        anotaciones: true,
+      },
+    })
 
-    res.json(allReservas)
+    // Mapear para mantener compatibilidad con el formato anterior si es necesario,
+    // o simplemente devolver el objeto con anotaciones.
+    const formattedReservas = allReservas.map((r) => ({
+      ...r,
+      casa: r.casa?.nombre,
+      estado: r.estado?.nombre,
+    }))
+
+    res.json(formattedReservas)
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: 'Error al obtener reservas' })
@@ -108,6 +116,38 @@ app.post('/reservas', async (req, res) => {
   }
 })
 
+// Actualizar una reserva
+app.put('/reservas/:id', async (req, res) => {
+  const { id } = req.params
+  const {
+    nombre,
+    casaId,
+    cantPersonas,
+    estadoId,
+    total,
+    fechaInicio,
+    fechaFin,
+  } = req.body
+  try {
+    await db
+      .update(reservas)
+      .set({
+        nombre,
+        casaId,
+        cantPersonas,
+        estadoId,
+        total,
+        fechaInicio: fechaInicio ? new Date(fechaInicio) : undefined,
+        fechaFin: fechaFin ? new Date(fechaFin) : undefined,
+      })
+      .where(eq(reservas.id, Number(id)))
+    res.json({ message: 'Reserva actualizada' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Error al actualizar reserva' })
+  }
+})
+
 // Eliminar una reserva
 app.delete('/reservas/:id', async (req, res) => {
   const { id } = req.params
@@ -117,6 +157,36 @@ app.delete('/reservas/:id', async (req, res) => {
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: 'Error al eliminar reserva' })
+  }
+})
+
+// Agregar una anotación
+app.post('/anotaciones', async (req, res) => {
+  const { reservaId, contenido } = req.body
+  try {
+    const result = await db.insert(anotaciones).values({
+      reservaId,
+      contenido,
+    })
+    res.status(201).json({
+      message: 'Anotación agregada',
+      id: result[0].insertId,
+    })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Error al agregar anotación' })
+  }
+})
+
+// Eliminar una anotación
+app.delete('/anotaciones/:id', async (req, res) => {
+  const { id } = req.params
+  try {
+    await db.delete(anotaciones).where(eq(anotaciones.id, Number(id)))
+    res.json({ message: 'Anotación eliminada' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Error al eliminar anotación' })
   }
 })
 
