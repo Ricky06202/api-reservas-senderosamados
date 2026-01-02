@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000
 
 const allowedOrigins = [
   'https://reservas-senderosamados.rsanjur.com',
-  'http://localhost',
+  'http://localhost:8081',
   'capacitor://localhost',
   'ionic://localhost',
 ]
