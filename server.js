@@ -32,6 +32,7 @@ app.use(
   })
 )
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
 // Obtener todas las casas
 app.get('/casas', async (req, res) => {
@@ -163,7 +164,7 @@ app.delete('/reservas/:id', async (req, res) => {
 
 // Agregar una anotación
 app.post('/anotaciones', async (req, res) => {
-  const { reservaId, contenido } = req.body
+  const { reservaId, contenido } = req.body || {}
   try {
     const result = await db.insert(anotaciones).values({
       reservaId,
