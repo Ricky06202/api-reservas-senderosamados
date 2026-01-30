@@ -24,6 +24,9 @@ export const reservas = mysqlTable('reservas', {
   cantPersonas: int('cant_personas').notNull(),
   estadoId: int('estado_id').references(() => estado.id),
   total: decimal('total', { precision: 10, scale: 2 }).notNull(),
+  abono: decimal('abono', { precision: 10, scale: 2 }).default('0.00'),
+  comisionBooking: decimal('comision_booking', { precision: 10, scale: 2 }).default('0.00'),
+  estadoComision: varchar('estado_comision', { length: 50 }).default('pendiente'),
   fechaInicio: timestamp('fecha_inicio').notNull(),
   fechaFin: timestamp('fecha_fin').notNull(),
 })

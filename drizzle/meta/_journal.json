@@ -8,6 +8,13 @@
       "when": 1767369431127,
       "tag": "0000_init_anotaciones",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1769801302167,
+      "tag": "0001_handy_namor",
+      "breakpoints": true
     }
   ]
 }
